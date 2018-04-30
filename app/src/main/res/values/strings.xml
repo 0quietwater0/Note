@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Note</string>
+    <string name="action_edit">批量删除</string>
 </resources>
