@@ -22,8 +22,7 @@
             android:background="@color/colorPrimary"
             android:text="文件夹"
             android:textColor="@color/colorText"
-            android:textSize="14sp"
-            tools:layout_editor_absoluteY="4dp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tv_title"

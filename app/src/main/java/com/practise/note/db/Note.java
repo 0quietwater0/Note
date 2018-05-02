@@ -2,6 +2,7 @@ package com.practise.note.db;
 
 import org.litepal.crud.DataSupport;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -10,22 +11,12 @@ import java.util.Date;
  * Summary:${实体}.
  */
 
-public class Note extends DataSupport {
-    private int notesId;
+public class Note extends DataSupport implements Serializable {
     private String noteName;
-    private Date createTime;
-    private Boolean isDelete;
-    private Date modifyTime;
-    private int bookId;
+    private String createTime;
+    private int isDelete;
+    private String modifyTime;
     private String noteContent;
-
-    public int getNotesId() {
-        return notesId;
-    }
-
-    public void setNotesId(int notesId) {
-        this.notesId = notesId;
-    }
 
     public String getNoteName() {
         return noteName;
@@ -35,37 +26,31 @@ public class Note extends DataSupport {
         this.noteName = noteName;
     }
 
-    public Date getCreateTime() {
+    public String getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(String createTime) {
         this.createTime = createTime;
     }
 
-    public Boolean getIsDelete() {
+    public int getIsDelete() {
         return isDelete;
     }
 
-    public void setIsDelete(Boolean isDelete) {
+    public void setIsDelete(int isDelete) {
         this.isDelete = isDelete;
     }
 
-    public Date getModifyTime() {
+    public String getModifyTime() {
         return modifyTime;
     }
 
-    public void setModifyTime(Date modifyTime) {
+    public void setModifyTime(String modifyTime) {
         this.modifyTime = modifyTime;
     }
 
-    public int getBookId() {
-        return bookId;
-    }
 
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
 
     public String getNoteContent() {
         return noteContent;
@@ -74,4 +59,5 @@ public class Note extends DataSupport {
     public void setNoteContent(String noteContent) {
         this.noteContent = noteContent;
     }
+
 }
