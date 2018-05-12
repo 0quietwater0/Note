@@ -18,16 +18,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
         <!--添加Toolbar的子控件-->
-        <Button
-            android:id="@+id/btn_back"
-            android:layout_width="@android:dimen/app_icon_size"
-            android:layout_height="@android:dimen/app_icon_size"
-            android:layout_gravity="left"
-            android:background="@drawable/ic_back"
-            android:textColor="@color/colorText"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:layout_editor_absoluteY="4dp" />
 
         <Button
             android:id="@+id/btn_saveNote"
@@ -44,7 +34,8 @@
         android:id="@+id/note_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="点击输入标题" />
+        android:hint="点击输入标题"
+        android:padding="10dp"/>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -56,7 +47,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@null"
-            android:hint="点击输入笔记" />
+            android:hint="点击输入笔记"
+            android:padding="10dp"/>
 
     </ScrollView>
 

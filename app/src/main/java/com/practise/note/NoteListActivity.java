@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -31,10 +32,14 @@ public class NoteListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_note_list);
 
         Toolbar mToolbar =  findViewById(R.id.toolbar);
-        mToolbar.setTitle("");
+        mToolbar.setTitle(" ");
         setSupportActionBar(mToolbar);
         //初始化数据
-        initNote();
+        allNote= DataSupport.findAll(Note.class);
+        noteAdapter=new NoteListAdapter(
+                NoteListActivity.this,R.layout.note_list_item,allNote);
+        listView=(ListView)findViewById(R.id.list_view);
+        listView.setAdapter(noteAdapter);
 
         //新建笔记
         Button btn_newFile=(Button)findViewById(R.id.btn_newFile);
@@ -49,6 +54,18 @@ public class NoteListActivity extends AppCompatActivity {
                 startActivityForResult(intent,REQUESTCODE);
             }
 
+        });
+
+        listView.setOnItemClickListener( new AdapterView.OnItemClickListener(){
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //position 点击的Item位置，从0开始算
+                Intent intent=new Intent(NoteListActivity.this,NoteShow.class);
+                Note note_item=allNote.get(position);
+                intent.putExtra("data",note_item);//传递给下一个Activity的值
+                startActivity(intent);//启动Activity
+            }
         });
 
 
@@ -67,15 +84,8 @@ public class NoteListActivity extends AppCompatActivity {
         }
 
     }
-    //初始化数据
-    public void initNote(){
-        allNote= DataSupport.findAll(Note.class);
-        noteAdapter=new NoteListAdapter(
-                NoteListActivity.this,R.layout.note_list_item,allNote);
-        listView=(ListView)findViewById(R.id.list_view);
-        listView.setAdapter(noteAdapter);
 
-    }
+
 
 
 

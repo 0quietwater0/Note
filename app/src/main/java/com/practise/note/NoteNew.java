@@ -11,6 +11,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -20,12 +21,15 @@ import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import com.practise.note.db.Note;
 
 import org.litepal.crud.DataSupport;
@@ -39,11 +43,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class NoteNew extends AppCompatActivity {
+public class NoteNew extends AppCompatActivity{
     EditText note_name;
     EditText note_content;
     Button btn_saveNote;
-    Button btn_back;
     ImageView insert_photo;
     ImageView take_photo;
     private static final int RESULTCODE = 2;
@@ -55,9 +58,13 @@ public class NoteNew extends AppCompatActivity {
         note_name = findViewById(R.id.note_name);
         note_content = findViewById(R.id.note_content);
         btn_saveNote = findViewById(R.id.btn_saveNote);
-        btn_back = findViewById(R.id.btn_back);
         insert_photo = (ImageView) findViewById(R.id.insert_photo);
         take_photo = (ImageView) findViewById(R.id.take_photo);
+        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar.setTitle("");
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
         insert_photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,18 +111,20 @@ public class NoteNew extends AppCompatActivity {
 
             }
         });
+
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         ContentResolver resolver = getContentResolver();
 
         if (requestCode == 0x111 && resultCode == RESULT_OK) {
-            Uri originalUri=data.getData();
+            Uri originalUri = data.getData();
             //Bitmap ori_bitmap = null;
             Bitmap ori_rbitmap = null;
             try {
-                ori_rbitmap= BitmapFactory.decodeStream(resolver.openInputStream(originalUri));
+                ori_rbitmap = BitmapFactory.decodeStream(resolver.openInputStream(originalUri));
                 //ori_rbitmap=resizeimg.resizeImage(ori_bitmap, 300, 300);
             } catch (FileNotFoundException e) {
                 // TODO 自动生成的 catch 块
@@ -156,7 +165,7 @@ public class NoteNew extends AppCompatActivity {
             note_content.setText((CharSequence) et);// 把et添加到note_content中
             note_content.setSelection(start + span_str.length());// 设置note_content中光标在最后面显示
         }
-        if (requestCode == 0x222 && resultCode == RESULT_OK){
+        if (requestCode == 0x222 && resultCode == RESULT_OK) {
             String sdStatus = Environment.getExternalStorageState();
             if (!sdStatus.equals(Environment.MEDIA_MOUNTED)) { // 检测sd是否可用
                 Log.i("TestFile", "SD card is not avaiable/writeable right now.");
@@ -164,7 +173,7 @@ public class NoteNew extends AppCompatActivity {
             String name = Calendar.getInstance(Locale.CHINA).getTimeInMillis() + ".jpg";//给拍的照片命名，下面进行存储
             Bundle bundle = data.getExtras();
             Bitmap camera_bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
-            Bitmap camera_rbitmap=reSize(camera_bitmap,800,600);
+            Bitmap camera_rbitmap = reSize(camera_bitmap, 800, 600);
             FileOutputStream FOut = null;
             File file = new File("/sdcard/myImage/");
             file.mkdirs();// 创建文件夹
@@ -196,7 +205,7 @@ public class NoteNew extends AppCompatActivity {
 
     }
 
-    private Bitmap reSize(Bitmap bitmaporg,int dw,int dh) {
+    private Bitmap reSize(Bitmap bitmaporg, int dw, int dh) {
         int widthold = bitmaporg.getWidth();
         int heightold = bitmaporg.getHeight();
         float scaleWidth = ((float) dw) / widthold;
@@ -208,6 +217,7 @@ public class NoteNew extends AppCompatActivity {
 
     }
 
+    @Nullable
     private Bitmap getSmallBitmap(String myPath) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -218,10 +228,10 @@ public class NoteNew extends AppCompatActivity {
         options.inSampleSize = calculateInSampleSize(options, dw, dh);
         options.inJustDecodeBounds = false;
         Bitmap bm = BitmapFactory.decodeFile(myPath, options);
-        if(bm == null){
-            return  null;
+        if (bm == null) {
+            return null;
         }
-        return bm ;
+        return bm;
     }
 
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
@@ -247,5 +257,11 @@ public class NoteNew extends AppCompatActivity {
         return inSampleSize;
     }
 
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()==android.R.id.home){
+                finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 }
