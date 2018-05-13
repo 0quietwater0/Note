@@ -35,7 +35,8 @@ public class NoteListActivity extends AppCompatActivity {
     private List<Integer> deleteList = new ArrayList<>();//存储将要删除的子项们的位置
     private CheckBox selectAllCheckbox;
     private static final String TAG = "MainActivity";
-    private static final int REQUESTCODE = 1;
+    private static final int REQUESTCODE = 1;//新建
+    private static final int REQUESTCODE_1 = 2;//展示
     private boolean isSelecting = false;//是否正在选择
     boolean selectAll = false;//选择全部
     int choose = -1;//第一次长按的位置，让它被选定
@@ -108,7 +109,7 @@ public class NoteListActivity extends AppCompatActivity {
                     Intent intent = new Intent(NoteListActivity.this, NoteShow.class);
                     Note note_item = allNote.get(position);
                     intent.putExtra("data", note_item);//传递给下一个Activity的值
-                    startActivity(intent);//启动Activity
+                    startActivityForResult(intent, REQUESTCODE_1);//启动NoteShow
                 }
 
             }
@@ -190,15 +191,18 @@ public class NoteListActivity extends AppCompatActivity {
                         deleteList.add(new Integer(i));
                     }
                     selectAll = true;
+                    textView.setText("（已选："+ deleteList.size()+" 项）");
                     noteAdapter.notifyDataSetInvalidated();
                 } else if (!isChecked && selectAll) {
                     deleteList.clear();
                     selectAll = false;
+                    textView.setText(" ");
                     noteAdapter.notifyDataSetChanged();
 
                 } else {
                     deleteList.clear();
                     selectAll = false;
+                    textView.setText(" ");
                     noteAdapter.notifyDataSetChanged();
                 }
             }
@@ -252,15 +256,31 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        try {
-            Note note = (Note) data.getSerializableExtra("data");
-            //noteList.add(note);
-            noteAdapter.add(note);
-            noteAdapter.notifyDataSetChanged();
+        if(resultCode==1){
+            try {
+                Note note = (Note) data.getSerializableExtra("data");
+                //noteList.add(note);
+                noteAdapter.add(note);
+                noteAdapter.notifyDataSetChanged();
+                listView.setAdapter(noteAdapter);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+        }else if(resultCode==2){
+
+            allNote = DataSupport.findAll(Note.class);
+            noteAdapter = new NoteListAdapter(
+                    NoteListActivity.this, R.layout.note_list_item, allNote);
+            listView = (ListView) findViewById(R.id.list_view);
             listView.setAdapter(noteAdapter);
-        } catch (NullPointerException e) {
-            e.printStackTrace();
+
         }
+
+
+
+
+
+
 
     }
 

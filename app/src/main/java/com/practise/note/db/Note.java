@@ -12,9 +12,9 @@ import java.util.Date;
  */
 
 public class Note extends DataSupport implements Serializable {
+
     private String noteName;
     private String createTime;
-    private int isDelete;
     private String modifyTime;
     private String noteContent;
 
@@ -32,14 +32,6 @@ public class Note extends DataSupport implements Serializable {
 
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
-    }
-
-    public int getIsDelete() {
-        return isDelete;
-    }
-
-    public void setIsDelete(int isDelete) {
-        this.isDelete = isDelete;
     }
 
     public String getModifyTime() {

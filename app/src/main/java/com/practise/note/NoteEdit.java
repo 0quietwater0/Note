@@ -1,41 +1,31 @@
 package com.practise.note;
 
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Display;
-import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.practise.note.db.Note;
-
-import org.litepal.crud.DataSupport;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,29 +36,36 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class NoteNew extends AppCompatActivity {
-    EditText note_name;
+public class NoteEdit extends AppCompatActivity {
     EditText note_content;
     Button btn_saveNote;
     ImageView insert_photo;
     ImageView take_photo;
-    private static final int RESULTCODE = 1;
+    Note note;
+    private static final int RESULTCODE = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_note_new);
-        note_name = findViewById(R.id.note_name);
+        setContentView(R.layout.activity_note_edit);
+        Intent intent = getIntent();
+        note = (Note) intent.getSerializableExtra("data");
+        String noteContent = note.getNoteContent();
+        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar.setTitle(note.getNoteName());
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
         note_content = findViewById(R.id.note_content);
         btn_saveNote = findViewById(R.id.btn_saveNote);
         insert_photo = (ImageView) findViewById(R.id.insert_photo);
         take_photo = (ImageView) findViewById(R.id.take_photo);
-        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mToolbar.setTitle("");
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        SpannableString span_str = (SpannableString) analyzeImage(noteContent);
+        note_content.setText(span_str);
         insert_photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,53 +85,25 @@ public class NoteNew extends AppCompatActivity {
         btn_saveNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String noteName = note_name.getText().toString();
-                List<Note> noteCheck = DataSupport.where("notename==?", noteName).find(Note.class);
-                int name_exsited = noteCheck.size();
-                //Log.d("NoteNew","checkNum:"+noteCheck.size());
+                String noteName = note.getNoteName();
                 String noteContent = note_content.getText().toString();
-                if (noteName != null && noteName.length() != 0) {
-                    //判断是否存在同名的笔记
-                    if (name_exsited == 0) {
-                        //将数据封装到intent中
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");// HH:mm:ss
-                        //获取当前时间
-                        Date date = new Date(System.currentTimeMillis());
-                        String temp_createTime = simpleDateFormat.format(date);
-                        Note note = new Note();
-                        note.setNoteName(noteName);
-                        note.setNoteContent(noteContent);
-                        note.setCreateTime(temp_createTime);
-                        note.setModifyTime(temp_createTime);
-                        note.save();
-                        Intent intent = new Intent();
-                        intent.putExtra("data", note);
-                        //添加返回值
-                        setResult(RESULTCODE, intent);
-                        //销毁当前的activity
-                        finish();
-                    } else {
-                        Toast.makeText(NoteNew.this, "笔记名称重复，无法保存",
-                                Toast.LENGTH_SHORT).show();
-                        note_name.setFocusable(true);
-                        note_name.setFocusableInTouchMode(true);
-                        note_name.requestFocus();
-                        // InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                        //imm.showSoftInput(note_name,0);
-                    }
-
-                } else {
-
-                    Toast.makeText(NoteNew.this, "笔记名称为空，无法保存",
-                            Toast.LENGTH_SHORT).show();
-                    note_name.setFocusable(true);
-                    note_name.setFocusableInTouchMode(true);
-                    note_name.requestFocus();
-                }
+                //将数据封装到intent中
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss ");// HH:mm:ss
+                //获取当前时间
+                Date date = new Date(System.currentTimeMillis());
+                String temp_modifyTime = simpleDateFormat.format(date);
+                note.setNoteContent(noteContent);
+                note.setModifyTime(temp_modifyTime);
+                note.updateAll("notename=?",noteName);
+                Intent intent = new Intent();
+                intent.putExtra("data", note);
+                //添加返回值
+                setResult(RESULTCODE, intent);
+                //销毁当前的activity
+                finish();
 
             }
         });
-
     }
 
     @Override
@@ -228,18 +197,6 @@ public class NoteNew extends AppCompatActivity {
 
     }
 
-    private Bitmap reSize(Bitmap bitmaporg, int dw, int dh) {
-        int widthold = bitmaporg.getWidth();
-        int heightold = bitmaporg.getHeight();
-        float scaleWidth = ((float) dw) / widthold;
-        float scaleHeight = ((float) dh) / heightold;
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
-        Bitmap bitmapnew = Bitmap.createBitmap(bitmaporg, 0, 0, widthold, heightold, matrix, true);
-        return bitmapnew;
-
-    }
-
     @Nullable
     private Bitmap getSmallBitmap(String myPath) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -280,11 +237,40 @@ public class NoteNew extends AppCompatActivity {
         return inSampleSize;
     }
 
+    //正则表达式解析出图片
+    public CharSequence analyzeImage(String content) {
+        String my_content = content;
+        SpannableString span_str = new SpannableString(content);
+        Pattern p = Pattern.compile("/sdcard/myImage/[0-9]{13}+.jpg");
+        Matcher m = p.matcher(my_content);
+        while (m.find()) {
+            String mypath = m.group();
+            Toast.makeText(this, m.group(), Toast.LENGTH_SHORT);
+            Bitmap bitmap = BitmapFactory.decodeFile(mypath);
+            Bitmap rbitmap = reSize(bitmap, 800, 600);
+            ImageSpan span = new ImageSpan(this, rbitmap);
+            span_str.setSpan(span, m.start(), m.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return span_str;
+    }
+
+    //调整图片大小
+    private Bitmap reSize(Bitmap bitmaporg, int dw, int dh) {
+        int widthold = bitmaporg.getWidth();
+        int heightold = bitmaporg.getHeight();
+        float scaleWidth = ((float) dw) / widthold;
+        float scaleHeight = ((float) dh) / heightold;
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        Bitmap bitmapnew = Bitmap.createBitmap(bitmaporg, 0, 0, widthold, heightold, matrix, true);
+        return bitmapnew;
+    }
+
+    //toolbar返回
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
         }
         return super.onOptionsItemSelected(item);
     }
-
 }
