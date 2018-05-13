@@ -44,7 +44,7 @@ public class NoteShow extends AppCompatActivity {
         String my_content=content;
         SpannableString span_str=new SpannableString(content);
         Pattern p=Pattern.compile("/sdcard/myImage/[0-9]{13}+.jpg");
-        Matcher m=p.matcher(content);
+        Matcher m=p.matcher(my_content);
         while(m.find()){
             String mypath=m.group();
             Toast.makeText(this, m.group(), Toast.LENGTH_SHORT);
