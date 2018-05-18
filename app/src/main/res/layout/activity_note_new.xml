@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/linearLayout"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context="com.practise.note.NoteNew">
-
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -26,84 +24,27 @@
             android:layout_gravity="right"
             android:background="@color/colorPrimary"
             android:text="保存"
-            android:textColor="@color/colorText"
             android:textSize="14sp" />
     </android.support.v7.widget.Toolbar>
-
     <EditText
         android:id="@+id/note_name"
+        android:layout_below="@id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="点击输入标题"
+        android:textSize="30dp"
+        android:maxLines="1"
         android:padding="10dp"/>
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar">
-
-        <EditText
-            android:id="@+id/note_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:hint="点击输入笔记"
-            android:padding="10dp"/>
-
-    </ScrollView>
-
-
-    <LinearLayout
-        android:id="@+id/ll"
+    <com.practise.note.view.FuncEditView
+        android:id="@+id/func_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:orientation="horizontal">
+        android:layout_below="@id/note_name"
+        android:background="@color/colorPrimary"/>
 
-        <ImageView
-            android:id="@+id/setting"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:contentDescription="设置"
-            android:src="@drawable/ic_setting" />
 
-        <ImageView
-            android:id="@+id/insert_photo"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:src="@drawable/ic_image"
-            android:contentDescription="相册"/>
 
-        <ImageView
-            android:id="@+id/take_photo"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:clickable="false"
-            android:contentDescription="相机"
-            android:src="@drawable/ic_camera" />
-
-        <ImageView
-
-            android:id="@+id/font"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:contentDescription="字体"
-            android:src="@drawable/ic_font" />
-
-        <ImageView
-            android:id="@+id/draw"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:contentDescription="涂鸦"
-            android:src="@drawable/ic_draw" />
-
-    </LinearLayout>
-</LinearLayout>
+</RelativeLayout>
 
 
 

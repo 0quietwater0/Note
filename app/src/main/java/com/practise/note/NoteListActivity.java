@@ -43,7 +43,7 @@ public class NoteListActivity extends AppCompatActivity {
     boolean isClosing = false;//关闭选择的一瞬间
     NoteListAdapter noteAdapter;
     ListView listView;
-    private RelativeLayout relativeLayout;
+    private RelativeLayout relativeLayout;//长按选择删除的布局
     Button cancelBt;
     Button deleteBt;
     TextView textView;
@@ -197,18 +197,39 @@ public class NoteListActivity extends AppCompatActivity {
                     deleteList.clear();
                     selectAll = false;
                     textView.setText(" ");
-                    noteAdapter.notifyDataSetChanged();
+                    noteAdapter.notifyDataSetInvalidated();
 
                 } else {
                     deleteList.clear();
                     selectAll = false;
                     textView.setText(" ");
-                    noteAdapter.notifyDataSetChanged();
+                    noteAdapter.notifyDataSetInvalidated();
                 }
             }
         });
     }
+    //点击删除键的处理逻辑
+    private void delete() {
+      // Collections.reverse(deleteList);
+        allNote = DataSupport.findAll(Note.class);
+        noteAdapter = new NoteListAdapter(
+                NoteListActivity.this, R.layout.note_list_item, allNote);
+        Log.d(TAG, "deleteSize删除前: " + deleteList.size() );
+        for ( int i = 0; i <  deleteList.size(); i++) {
 
+             Log.d(TAG, "deleteList: " + deleteList.get(i));
+             Note delete_note = noteAdapter.getItem(deleteList.get(i));
+             Log.d(TAG, "delete_note: " + delete_note.getNoteName());
+//           if(delete_note!=null&&deleteList.size()>0){
+             delete_note.delete();
+        }
+
+        allNote = DataSupport.findAll(Note.class);
+        noteAdapter = new NoteListAdapter(
+                NoteListActivity.this, R.layout.note_list_item, allNote);
+        listView.setAdapter(noteAdapter);
+        cancel();
+    }
     //点击取消或返回键的处理逻辑
     private void cancel() {
         selectAll = false;
@@ -220,27 +241,6 @@ public class NoteListActivity extends AppCompatActivity {
         noteAdapter.notifyDataSetInvalidated();
         isSelecting = false;
     }
-
-    private void delete() {
-        for (int i = 0; i < deleteList.size(); i++) {
-            // Log.d(TAG, "delete: " + deleteList.get(i).intValue());
-
-            Note delete_note = noteAdapter.getItem(deleteList.get(i));
-
-            delete_note.delete();
-            noteAdapter.remove(delete_note);
-            noteAdapter.notifyDataSetChanged();
-            listView.setAdapter(noteAdapter);
-
-
-        }
-        isClosing = true;
-        noteAdapter.notifyDataSetInvalidated();
-        relativeLayout.setVisibility(View.GONE);
-        isSelecting = false;
-        deleteList.clear();
-    }
-
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {//点击的是返回键
