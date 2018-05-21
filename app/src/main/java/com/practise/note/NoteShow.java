@@ -148,7 +148,7 @@ public class NoteShow extends AppCompatActivity {
 
             //销毁当前的activity
             finish();
-            finish();
+
         }
         return super.onOptionsItemSelected(item);
     }

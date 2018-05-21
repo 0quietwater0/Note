@@ -17,10 +17,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.practise.note.db.Note;
 
@@ -37,6 +39,7 @@ public class NoteListActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int REQUESTCODE = 1;//新建
     private static final int REQUESTCODE_1 = 2;//展示
+
     private boolean isSelecting = false;//是否正在选择
     boolean selectAll = false;//选择全部
     int choose = -1;//第一次长按的位置，让它被选定
@@ -47,6 +50,12 @@ public class NoteListActivity extends AppCompatActivity {
     Button cancelBt;
     Button deleteBt;
     TextView textView;
+    Button btn_search;//搜索的button
+    private RelativeLayout searchLayout;//搜索的布局
+    EditText searchText;
+    Button searchOk;
+    Button searchCancel;
+    boolean isSearch = false;//搜索button是否被点击
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +67,12 @@ public class NoteListActivity extends AppCompatActivity {
         deleteBt = (Button) findViewById(R.id.delete_bt);
         cancelBt = (Button) findViewById(R.id.cancel_bt);
         selectAllCheckbox = (CheckBox) findViewById(R.id.select_all_checkbox);
-        textView=(TextView)findViewById(R.id.selected_num);
-
+        textView = (TextView) findViewById(R.id.selected_num);
+        //获取搜索布局控件对象
+        searchLayout = (RelativeLayout) findViewById(R.id.navigation_search);
+        searchText = (EditText) findViewById(R.id.search_Text);
+        searchOk = (Button) findViewById(R.id.search_ok);
+        searchCancel = (Button) findViewById(R.id.search_cancel);
 
         Toolbar mToolbar = findViewById(R.id.toolbar);
         mToolbar.setTitle("");
@@ -70,7 +83,70 @@ public class NoteListActivity extends AppCompatActivity {
                 NoteListActivity.this, R.layout.note_list_item, allNote);
         listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(noteAdapter);
+        //查询笔记
+        btn_search = (Button) findViewById(R.id.btn_search);
+        btn_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isSearch) {
+                    searchLayout.setVisibility(View.GONE);
 
+                } else {//搜索
+                    searchLayout.setVisibility(View.VISIBLE);
+                    searchText.getText().clear();
+                    searchText.setFocusable(true);
+                    searchText.setFocusableInTouchMode(true);
+                    searchText.requestFocus();
+                    noteAdapter = new NoteListAdapter(
+                            NoteListActivity.this, R.layout.note_list_item, allNote);
+                    listView = (ListView) findViewById(R.id.list_view);
+                    listView.setAdapter(noteAdapter);
+                }
+                isSearch = !isSearch;
+            }
+        });
+        searchOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String searchName = searchText.getText().toString();
+                if (searchName != null && searchName.length() != 0) {
+                    List<Note> noteSearch = DataSupport.where("notename==?", searchName).find(Note.class);
+                    int name_exsited = noteSearch.size();
+                    if (name_exsited == 1) {
+                        noteAdapter = new NoteListAdapter(
+                                NoteListActivity.this, R.layout.note_list_item, noteSearch);
+                        listView = (ListView) findViewById(R.id.list_view);
+                        listView.setAdapter(noteAdapter);
+                        searchLayout.setVisibility(View.GONE);
+                        isSearch = false;
+                    } else {
+                        Toast.makeText(NoteListActivity.this, "无此笔记",
+                                Toast.LENGTH_SHORT).show();
+                        searchText.getText().clear();
+                        searchText.setFocusable(true);
+                        searchText.setFocusableInTouchMode(true);
+                        searchText.requestFocus();
+                        noteAdapter = new NoteListAdapter(
+                                NoteListActivity.this, R.layout.note_list_item, allNote);
+                        listView = (ListView) findViewById(R.id.list_view);
+                        listView.setAdapter(noteAdapter);
+                    }
+                } else {
+                    Toast.makeText(NoteListActivity.this, "请输入笔记全称",
+                            Toast.LENGTH_SHORT).show();
+                    searchText.setFocusable(true);
+                    searchText.setFocusableInTouchMode(true);
+                    searchText.requestFocus();
+                }
+            }
+        });
+        searchCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchCancel();
+
+            }
+        });
         //新建笔记
         Button btn_newFile = (Button) findViewById(R.id.btn_newFile);
         btn_newFile.setOnClickListener(new View.OnClickListener() {
@@ -103,7 +179,7 @@ public class NoteListActivity extends AppCompatActivity {
                             }
                         }
                     }
-                    textView.setText("（已选："+ deleteList.size()+" 项）");
+                    textView.setText("（已选：" + deleteList.size() + " 项）");
 
                 } else {
                     Intent intent = new Intent(NoteListActivity.this, NoteShow.class);
@@ -117,7 +193,7 @@ public class NoteListActivity extends AppCompatActivity {
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                textView.setText("（已选："+1+" 项）");
+                textView.setText("（已选：" + 1 + " 项）");
                 if (isSelecting) {
                     CheckBox checkBox = view.findViewById(R.id.item_checkbox);
                     checkBox.setChecked(!checkBox.isChecked());
@@ -191,7 +267,7 @@ public class NoteListActivity extends AppCompatActivity {
                         deleteList.add(new Integer(i));
                     }
                     selectAll = true;
-                    textView.setText("（已选："+ deleteList.size()+" 项）");
+                    textView.setText("（已选：" + deleteList.size() + " 项）");
                     noteAdapter.notifyDataSetInvalidated();
                 } else if (!isChecked && selectAll) {
                     deleteList.clear();
@@ -208,20 +284,21 @@ public class NoteListActivity extends AppCompatActivity {
             }
         });
     }
+
     //点击删除键的处理逻辑
     private void delete() {
-      // Collections.reverse(deleteList);
+        // Collections.reverse(deleteList);
         allNote = DataSupport.findAll(Note.class);
         noteAdapter = new NoteListAdapter(
                 NoteListActivity.this, R.layout.note_list_item, allNote);
-        Log.d(TAG, "deleteSize删除前: " + deleteList.size() );
-        for ( int i = 0; i <  deleteList.size(); i++) {
+        Log.d(TAG, "deleteSize删除前: " + deleteList.size());
+        for (int i = 0; i < deleteList.size(); i++) {
 
-             Log.d(TAG, "deleteList: " + deleteList.get(i));
-             Note delete_note = noteAdapter.getItem(deleteList.get(i));
-             Log.d(TAG, "delete_note: " + delete_note.getNoteName());
-//           if(delete_note!=null&&deleteList.size()>0){
-             delete_note.delete();
+            Log.d(TAG, "deleteList: " + deleteList.get(i));
+            Note delete_note = noteAdapter.getItem(deleteList.get(i));
+            Log.d(TAG, "delete_note: " + delete_note.getNoteName());
+            //           if(delete_note!=null&&deleteList.size()>0){
+            delete_note.delete();
         }
 
         allNote = DataSupport.findAll(Note.class);
@@ -230,6 +307,13 @@ public class NoteListActivity extends AppCompatActivity {
         listView.setAdapter(noteAdapter);
         cancel();
     }
+
+    private void searchCancel() {
+        searchLayout.setVisibility(View.GONE);
+        isSearch = false;
+        noteAdapter.notifyDataSetInvalidated();
+    }
+
     //点击取消或返回键的处理逻辑
     private void cancel() {
         selectAll = false;
@@ -241,11 +325,13 @@ public class NoteListActivity extends AppCompatActivity {
         noteAdapter.notifyDataSetInvalidated();
         isSelecting = false;
     }
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {//点击的是返回键
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0 && isSelecting) {
                 cancel();
+                searchCancel();
                 return true;
             }
         }
@@ -256,7 +342,7 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode==1){
+        if (resultCode == 1) {
             try {
                 Note note = (Note) data.getSerializableExtra("data");
                 //noteList.add(note);
@@ -266,7 +352,7 @@ public class NoteListActivity extends AppCompatActivity {
             } catch (NullPointerException e) {
                 e.printStackTrace();
             }
-        }else if(resultCode==2){
+        } else if (resultCode == 2) {
 
             allNote = DataSupport.findAll(Note.class);
             noteAdapter = new NoteListAdapter(
@@ -275,11 +361,6 @@ public class NoteListActivity extends AppCompatActivity {
             listView.setAdapter(noteAdapter);
 
         }
-
-
-
-
-
 
 
     }
